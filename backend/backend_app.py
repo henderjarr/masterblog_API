@@ -1,4 +1,4 @@
-from flask import Flask, abort, jsonify, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -12,6 +12,18 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET', 'POST'])
 def get_posts():
+    title_filter = request.args.get('title')
+    content_filter = request.args.get('content')
+    filtered_posts = POSTS
+
+    if title_filter or content_filter:
+        for post in POSTS:
+            if title_filter and title_filter.lower() not in post["title"].lower():
+                filtered_posts.remove(post)
+            elif content_filter and content_filter.lower() not in post["content"].lower():
+                filtered_posts.remove(post)
+        return jsonify(filtered_posts)
+
     if request.method == 'POST':
         data = request.get_json()
         if not data or not data.get("title") or not data.get("content"):
@@ -25,6 +37,26 @@ def get_posts():
         POSTS.append(new_post)
         return jsonify(new_post), 201
     return jsonify(POSTS)
+
+
+@app.route('/api/posts/search', methods=['GET'])
+def search_posts():
+    title_filter = request.args.get('title')
+    content_filter = request.args.get('content')
+
+    def matches(post):
+        if title_filter and title_filter.lower() not in post["title"].lower():
+            return False
+        if content_filter and content_filter.lower() not in post["content"].lower():
+            return False
+        return True
+
+    filtered_posts = []
+    for post in POSTS:
+        if matches(post):
+            filtered_posts.append(post)
+
+    return jsonify(filtered_posts)
 
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
