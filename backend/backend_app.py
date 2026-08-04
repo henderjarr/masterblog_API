@@ -12,20 +12,9 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET', 'POST'])
 def get_posts():
-    title_filter = request.args.get('title')
-    content_filter = request.args.get('content')
-    filtered_posts = POSTS
-
-    if title_filter or content_filter:
-        for post in POSTS:
-            if title_filter and title_filter.lower() not in post["title"].lower():
-                filtered_posts.remove(post)
-            elif content_filter and content_filter.lower() not in post["content"].lower():
-                filtered_posts.remove(post)
-        return jsonify(filtered_posts)
-
     if request.method == 'POST':
         data = request.get_json()
+
         if not data or not data.get("title") or not data.get("content"):
             return jsonify({"error": "Title and content are required"}), 400
 
@@ -36,6 +25,20 @@ def get_posts():
         }
         POSTS.append(new_post)
         return jsonify(new_post), 201
+
+    sort_posts = request.args.get('sort')
+    direction = request.args.get('direction', 'asc')
+
+    sorted_posts = POSTS
+
+    if sort_posts is not None:
+        if sort_posts not in ("title", "content"):
+            return jsonify({"error": "Invalid sort parameter"}), 400
+        if direction not in ("asc", "desc"):
+            return jsonify({"error": "Invalid direction parameter"}), 400
+        sorted_posts.sort(
+            key=lambda x: x[sort_posts].lower(), reverse=(direction == "desc"))
+
     return jsonify(POSTS)
 
 
