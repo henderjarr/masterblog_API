@@ -1,8 +1,19 @@
 from flask import Flask, jsonify, request
+from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
+
+SWAGGER_URL = "/api/docs"
+API_URL = "/static/masterblog.json"
+
+swagger_ui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={'app_name': 'Masterblog API'}
+)
+app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 POSTS = [
     {"id": 1, "title": "First post", "content": "This is the first post."},
@@ -29,17 +40,17 @@ def get_posts():
     sort_posts = request.args.get('sort')
     direction = request.args.get('direction', 'asc')
 
-    sorted_posts = POSTS
+    results_to_be_displayed = POSTS
 
     if sort_posts is not None:
         if sort_posts not in ("title", "content"):
             return jsonify({"error": "Invalid sort parameter"}), 400
         if direction not in ("asc", "desc"):
             return jsonify({"error": "Invalid direction parameter"}), 400
-        sorted_posts.sort(
-            key=lambda x: x[sort_posts].lower(), reverse=(direction == "desc"))
+        results_to_be_displayed = sorted(
+            POSTS, key=lambda x: x[sort_posts].lower(), reverse=(direction == "desc"))
 
-    return jsonify(POSTS)
+    return jsonify(results_to_be_displayed)
 
 
 @app.route('/api/posts/search', methods=['GET'])
@@ -79,23 +90,23 @@ def delete_post(post_id):
 
 @app.route('/api/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
-    post_to_update = None
+    updated_post = None
     for post in POSTS:
         if post["id"] == post_id:
-            post_to_update = post
+            updated_post = post
             break
 
-    if post_to_update is None:
+    if updated_post is None:
         return jsonify({"error": "Post not found"}), 404
 
     data = request.get_json()
     if not data or not data.get("title") or not data.get("content"):
         return jsonify({"error": "Title and content are required"}), 400
 
-    post_to_update["title"] = data.get("title")
-    post_to_update["content"] = data.get("content")
+    updated_post["title"] = data.get("title")
+    updated_post["content"] = data.get("content")
 
-    return jsonify(post_to_update), 200
+    return jsonify(updated_post), 200
 
 
 if __name__ == '__main__':

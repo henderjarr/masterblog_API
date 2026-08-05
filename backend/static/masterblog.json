@@ -1,0 +1,159 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Masterblog API",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "http://localhost:5001" }],
+  "tags": [{ "name": "Post", "description": "Post API - CRUD" }],
+  "paths": {
+        "/api/posts": {
+          "get": {
+            "summary": "Returns all posts",
+            "produces": ["application/json"],
+            "tags": ["Post"],
+            "parameters":[
+              {
+                "name": "sort",
+                "in": "query",
+                "required": false,
+                "type": "string",
+                "enum": ["title", "content"],
+                "description": "Field to sort by (title or content)"
+              },
+              {
+                "name": "direction",
+                "in": "query",
+                "required": false,
+                "type": "string",
+                "enum": ["asc", "desc"],
+                "description": "Sort direction (asc or desc)"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful operation"
+              }, 
+               "400": {
+                 "description": "Invalid 'sort' parameter (must be 'title' or 'content'), or invalid 'direction' parameter (must be 'asc' or 'desc')"
+               } 
+            }
+          },
+          "post": {
+            "summary": "Creates a new post",
+            "produces": ["application/json"],
+            "tags": ["Post"],
+            "parameters": [
+             {
+                "name": "post",
+                "in": "body",
+                "required": true,
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": { "type": "string" },
+                    "content": { "type": "string" }
+                  },
+                  "required": ["title", "content"]
+                }
+             }
+            ],
+            "responses": {
+              "201": {
+                "description": "Post created successfully"
+              },
+              "400": {
+                "description": "Title and conten are required"
+              }
+            }
+          }
+        },
+        "/api/posts/search": {
+          "get": {
+            "summary": "Searches for posts by title or content",
+            "produces": ["application/json"],
+            "tags": ["Post"],
+            "parameters": [
+              {
+                "name": "title",
+                "in": "query",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "name": "content",
+                "in": "query",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful operation"
+              }
+            }
+          }
+        },
+        "/api/posts/{id}": {
+          "delete": {
+            "summary": "Deletes a post by ID",
+            "produces": ["application/json"],
+            "tags": ["Post"],
+            "parameters": [
+              {
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Post deleted successfully"
+              },
+              "404": {
+                "description": "Post not found"
+              }
+            }
+          },
+          "put": {
+            "summary": "Updates a post by ID",
+            "produces": ["application/json"],
+            "tags": ["Post"],
+            "parameters": [
+              {
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+              },
+              {
+                "name": "post",
+                "in": "body",
+                "required": true,
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": { "type": "string" },
+                    "content": { "type": "string" }
+                  },
+                  "required": ["title", "content"]
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Post updated successfully"
+              },
+              "400": {
+                "description": "'title' and 'content' are required"
+              },
+              "404": {
+                "description": "Post not found"
+              }
+            }
+          }
+        }
+    }
+
+}
